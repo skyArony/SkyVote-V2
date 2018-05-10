@@ -14,6 +14,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::post('/test', 'ActivityController@create');
+
+// session 登录
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
