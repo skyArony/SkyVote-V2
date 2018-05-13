@@ -35,8 +35,8 @@ class ActivityController extends Controller
     {
         // 校验
         $validatedData = $request->validate([
-            'name' => 'bail|required|max:50',
-            'intro' => 'bail|required|max:512',
+            'name' => 'required|max:50',
+            'intro' => 'required|max:512',
             'host' => 'max:100',
             'undertake' => 'max:100',
             'sponsored' => 'max:100',
@@ -45,8 +45,8 @@ class ActivityController extends Controller
             'user_from' => 'required|integer|in:1,2,3,4',
             'rules' => 'json',
             'ava_type' => 'required|json',
-            'backimg' => 'url',
-            'logo' => 'url',
+            'backimg' => 'url|max:512',
+            'logo' => 'url|max:512',
             'start_at' => 'date|after:now',
             'end_at' => 'date|after_or_equal:start_at'
         ]);

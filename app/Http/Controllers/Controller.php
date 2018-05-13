@@ -34,6 +34,12 @@ class Controller extends BaseController
             -5001 => '新建失败',
             -5002 => '更新失败',
 
+            // 数据输入相关
+            -4001 => '缺失img_url',
+            -4002 => '缺失video_url',
+            -4003 => '缺失audio_url',
+            -4004 => '缺失 link_url 或 linkcover_url',
+
             // -5000 为框架自动抛出的，token 校验的中间件会用到这个
         );
         return $msgForCode[$errcode];

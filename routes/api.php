@@ -35,11 +35,18 @@ use Illuminate\Http\Request;
      $api->match(['put','patch'] ,'activitys/{activity}', 'ActivityController@update');
      $api->delete('activitys/{activity}', 'ActivityController@destroy');
 
+     // candidate 管理
+     $api->post('candidates', 'CandidateController@store');
+     $api->get('candidates', 'CandidateController@index');
+     $api->get('candidates/{candidate}', 'CandidateController@show');
+     $api->match(['put','patch'] ,'candidates/{candidate}', 'CandidateController@update');
+     $api->delete('candidates/{candidate}', 'CandidateController@destroy');
+
+     // participant 管理
+     $api->post('participants', 'ParticipantController@store');
+     $api->get('participants', 'ParticipantController@index');
+     $api->get('participants/{participant}', 'ParticipantController@show');
+     $api->match(['put','patch'] ,'participants/{participant}', 'ParticipantController@update');
+     $api->delete('participants/{participant}', 'ParticipantController@destroy');
+
  });
-
-
-Route::apiResources([
-    'candidate' => 'CandidateController',
-    'participant' => 'ParticipantController'
-]);
-
