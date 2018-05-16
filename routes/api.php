@@ -18,35 +18,40 @@ use Illuminate\Http\Request;
 // });
 
 
- $api = app('Dingo\Api\Routing\Router');
- $api->version('v1', ['namespace' => 'App\Http\Controllers'], function ($api) {
-     // token 相关
-     $api->group(['prefix' => 'auth'], function ($api) {
-         $api->post('login', 'AuthController@login');
-         $api->post('logout', 'AuthController@logout');
-         $api->post('refresh', 'AuthController@refresh');
-         $api->post('me', 'AuthController@me');
-     });
+$api = app('Dingo\Api\Routing\Router');
+$api->version('v1', ['namespace' => 'App\Http\Controllers'], function ($api) {
+    // token 相关
+    $api->group(['prefix' => 'auth'], function ($api) {
+        $api->post('login', 'AuthController@login');
+        $api->post('logout', 'AuthController@logout');
+        $api->post('refresh', 'AuthController@refresh');
+        $api->post('me', 'AuthController@me');
+    });
 
-     // activity 管理
-     $api->post('activitys', 'ActivityController@store');
-     $api->get('activitys', 'ActivityController@index');
-     $api->get('activitys/{activity}', 'ActivityController@show');
-     $api->match(['put','patch'] ,'activitys/{activity}', 'ActivityController@update');
-     $api->delete('activitys/{activity}', 'ActivityController@destroy');
+    // activity 管理
+    $api->post('activitys', 'ActivityController@store');
+    $api->get('activitys', 'ActivityController@index');
+    $api->get('activitys/{activity}', 'ActivityController@show');
+    $api->match(['put','patch'] ,'activitys/{activity}', 'ActivityController@update');
+    $api->delete('activitys/{activity}', 'ActivityController@destroy');
 
-     // candidate 管理
-     $api->post('candidates', 'CandidateController@store');
-     $api->get('candidates', 'CandidateController@index');
-     $api->get('candidates/{candidate}', 'CandidateController@show');
-     $api->match(['put','patch'] ,'candidates/{candidate}', 'CandidateController@update');
-     $api->delete('candidates/{candidate}', 'CandidateController@destroy');
+    // candidate 管理
+    $api->post('candidates', 'CandidateController@store');
+    $api->get('candidates', 'CandidateController@index');
+    $api->get('candidates/{candidate}', 'CandidateController@show');
+    $api->match(['put','patch'] ,'candidates/{candidate}', 'CandidateController@update');
+    $api->delete('candidates/{candidate}', 'CandidateController@destroy');
 
-     // participant 管理
-     $api->post('participants', 'ParticipantController@store');
-     $api->get('participants', 'ParticipantController@index');
-     $api->get('participants/{participant}', 'ParticipantController@show');
-     $api->match(['put','patch'] ,'participants/{participant}', 'ParticipantController@update');
-     $api->delete('participants/{participant}', 'ParticipantController@destroy');
+    // voter 管理
+    $api->post('voters', 'VoterController@store');
+    $api->get('voters', 'VoterController@index');
+    $api->get('voters/{voter}', 'VoterController@show');
+    $api->match(['put','patch'] ,'voters/{voter}', 'VoterController@update');
+    $api->delete('voters/{voter}', 'VoterController@destroy');
 
+    // 文件上传
+    $api->post('file', 'FileController@uploadImg');
+
+    // 投票
+    $api->post('vote','VoteController@vote');
  });

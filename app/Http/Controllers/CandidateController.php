@@ -5,9 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\DB\Candidate;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Redis;
+use App\Models\DB\CandidateRecord;
 
 class CandidateController extends Controller
 {
+    // 指定中间件
+    public function __construct()
+    {
+        // $this->middleware('jwt.auth');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -36,7 +44,7 @@ class CandidateController extends Controller
             'belong_ac' => 'required',
             'type' => 'required|integer|in:1,2,3,4',
             'media_array' => 'required|array',
-            'media_array.img_url' => 'url|max:512',
+            'media_array.img_url' => 'array',
             'media_array.video_url' => 'url|max:512',
             'media_array.audio_url' => 'url|max:512',
             'media_array.link_url' => 'url|max:512',
@@ -59,7 +67,7 @@ class CandidateController extends Controller
 
         switch ($validatedData['type']) {
             case 1:
-                if (isset($validatedData['media_array']['img_url'])) $candidate->img_url = $validatedData['media_array']['img_url'];
+                if (isset($validatedData['media_array']['img_url'])) $candidate->img_url = json_encode($validatedData['media_array']['img_url']);
                 else return $this->setResponse(null, 400, -4001);
                 break;
             case 2:
@@ -81,6 +89,11 @@ class CandidateController extends Controller
 
         if($candidate->save()) {
             $data = Candidate::find($uuid);
+            Redis::sadd("candidates:".$validatedData['belong_ac'], $data->uniquekey);
+            $candidateRecord = new CandidateRecord;
+            $candidateRecord->candidate_key = $data->uniquekey;
+            $candidateRecord->ballot = 0;
+            $candidateRecord->save();
             return $this->setResponse($data, 200, 0);
         } else {
             return $this->setResponse(null, 500, -5001);
@@ -117,7 +130,7 @@ class CandidateController extends Controller
             'intro' => 'max:512',
             'type' => 'integer|in:1,2,3,4',
             'media_array' => 'array',
-            'media_array.img_url' => 'url|max:512',
+            'media_array.img_url' => 'array',
             'media_array.video_url' => 'url|max:512',
             'media_array.audio_url' => 'url|max:512',
             'media_array.link_url' => 'url|max:512',
@@ -137,7 +150,7 @@ class CandidateController extends Controller
         if(isset($validatedData['type'])){
             switch ($validatedData['type']) {
                 case 1:
-                    if (isset($validatedData['media_array']['img_url'])) $candidate->img_url = $validatedData['media_array']['img_url'];
+                    if (isset($validatedData['media_array']['img_url'])) $candidate->img_url = json_encode($validatedData['media_array']['img_url']);
                     break;
                 case 2:
 
