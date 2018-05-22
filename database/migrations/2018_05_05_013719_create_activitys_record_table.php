@@ -15,10 +15,10 @@ class CreateActivitysRecordTable extends Migration
     {
         Schema::create('activitys_record', function (Blueprint $table) {
             $table->increments('id');
-            $table->char('activity_key', 36)->comment('活动key');
+            $table->unsignedInteger('activity_id')->comment('活动id');
             $table->integer('pv')->default(0)->comment('浏览量');
             $table->integer('uv')->default(0)->comment('浏览人数');
-            $table->foreign('activity_key')->references('uniquekey')->on('activitys_info')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('activity_id')->references('id')->on('activitys')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

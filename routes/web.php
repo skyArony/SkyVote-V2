@@ -11,12 +11,16 @@
 |
 */
 Route::get('/', function () {
-
     return view('welcome');
 });
 
 // session 登录验证
 Auth::routes();
+
+// admin
+Route::group(['prefix' => 'admin'], function () {
+    Voyager::routes();
+});
 
 Route::get('/home', 'HomeController@index')->name('home');
 
@@ -24,3 +28,5 @@ Route::get('/socialite/qq', 'SocialiteController@QQ');
 Route::get('/socialite/callback', 'SocialiteController@callback');
 
 Route::get('/test', 'Controller@Test');
+
+

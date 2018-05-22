@@ -18,7 +18,7 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', [1, 2, 3, 4]);
+//            $table->enum('role', [1, 2, 3, 4]);
             $table->rememberToken();
             $table->timestamps();
         });
@@ -31,6 +31,10 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
+        Schema::connection('mysql-passport')->disableForeignKeyConstraints();   // 关闭外键约束
+
         Schema::dropIfExists('users');
+
+        Schema::connection('mysql-passport')->enableForeignKeyConstraints();   // 开启外键约束
     }
 }

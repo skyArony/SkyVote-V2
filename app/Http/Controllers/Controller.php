@@ -11,6 +11,7 @@ use Dingo\Api\Http\Response;
 use App\Models\DB\ActivityRecord;
 use App\Models\DB\CandidateRecord;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Storage;
 
 class Controller extends BaseController
 {
@@ -44,6 +45,7 @@ class Controller extends BaseController
             -4003 => '缺失audio_url',
             -4004 => '缺失 link_url 或 linkcover_url',
             -4005 => 'activity_key参数错误',
+            -4005 => 'belong_ac_id 错误，不存在这样的活动',
 
             // 业务相关
             -4010 => '不在可投票时段',
@@ -59,25 +61,11 @@ class Controller extends BaseController
     }
 
     public function Test() {
-        // 更新 pv 和 uv
-        $activity_pv = Redis::zrange('activity_pv', 0, -1, 'WITHSCORES');
-        $activity_uv = Redis::zrange('activity_uv', 0, -1, 'WITHSCORES');
-        foreach ($activity_pv as $key => $value) {
-            $activity_record = ActivityRecord::findOrFail($key);
-            $activity_record->pv = $value;
-            $activity_record->uv = $activity_uv[$key];
-            $activity_record->save();
+        $path = Storage::put('test/test.txt', 'ddd');
+        if($path) {
+            $contents = Storage::get('test/test.txt');
         }
-        // 更新 ballot
-        $activitys = Redis::KEYS('ballots:*');
-        foreach ($activitys as $value) {
-            $ballot = Redis::zrange($value, 0, -1, 'WITHSCORES');
-            array_shift($ballot);
-            foreach ($ballot as $key => $value2) {
-                $candidate_record = CandidateRecord::findOrFail($key);
-                $candidate_record->ballot = $value2;
-                $candidate_record->save();
-            }
-        }
+        dd($contents);
+
     }
 }

@@ -13,7 +13,7 @@ class ActivityController extends Controller
     // 指定中间件
     public function __construct()
     {
-        $this->middleware('jwt.auth');
+//        $this->middleware('jwt.auth');
     }
 
     /**
@@ -39,71 +39,65 @@ class ActivityController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|max:50',
             'intro' => 'required|max:512',
+            'refresh_period' => 'required|integer|min:1',
+            'refresh_chance' => 'required|integer|min:1',
+            'user_from' => 'required|in:QQ,Weibo,Wechat,Other',
+            'type' => 'required|in:img,video,audio,link',
+            'start_at' => 'required|date|after:now',
+            'end_at' => 'required|date|after_or_equal:start_at',
             'host' => 'max:100',
             'undertake' => 'max:100',
-            'sponsored' => 'max:100',
-            'refresh_period' => 'integer|min:1',
-            'refresh_chance' => 'integer|min:1',
-            'user_from' => 'required|integer|in:1,2,3,4',
-            'rules' => 'json',
-            'ava_type' => 'required|json',
-            'backimg' => 'url|max:512',
-            'logo' => 'url|max:512',
-            'start_at' => 'date|after:now',
-            'end_at' => 'date|after_or_equal:start_at'
+            'sponsored' => 'max:100'
         ]);
 
         $user = auth('api')->user();
-        $uuid = Str::uuid();
 
         $activity = new Activity;
-        $activity->uniquekey = $uuid;
-        $activity->creator = $user->email;
+        // $activity->creator = $user->email;
 
-        $activity->name = $validatedData['name'];
-        $activity->intro = $validatedData['intro'];
-        $activity->host = $validatedData['host'];
-        $activity->undertake = $validatedData['undertake'];
-        $activity->sponsored = $validatedData['sponsored'];
-        isset($validatedData['refresh_period']) ? $activity->refresh_period = $validatedData['refresh_period'] : 1;    // 在值不为空时才赋值，这里的 1 无意义
-        isset($validatedData['refresh_chance']) ? $activity->refresh_chance = $validatedData['refresh_chance'] : 1;
-        $activity->user_from = $validatedData['user_from'];
-        $activity->rules = $validatedData['rules'];
-        $activity->ava_type = $validatedData['ava_type'];
-        isset($validatedData['backimg']) ? $activity->backimg = $validatedData['backimg'] : 1;
-        isset($validatedData['logo']) ? $activity->logo = $validatedData['logo'] : 1;
-        isset($validatedData['start_at']) ? $activity->start_at = $validatedData['start_at'] : 1;
-        isset($validatedData['end_at']) ? $activity->end_at = $validatedData['end_at'] : 1;
+        $activity->name = $request['name'];
+        $activity->intro = $request['intro'];
+        $activity->user_from = $request['user_from'];
+        $activity->type = $request['type'];
+        $activity->start_at = $request['start_at'];
+        $activity->end_at = $request['end_at'];
+        $activity->refresh_period = $request['refresh_period'];
+        $activity->refresh_chance = $request['refresh_chance'];
+        isset($request['host']) ? $activity->host = $request['host'] : 1;
+        isset($request['undertake']) ? $activity->undertake = $request['undertake'] : 1;
+        isset($request['sponsored']) ? $activity->sponsored = $request['sponsored'] : 1;
+        isset($request['rules']) ? $activity->rules = $request['rules'] : 1;
+        isset($request['backimg']) ? $activity->backimg = $request['backimg'] : 1;
+        isset($request['logo']) ? $activity->logo = $request['logo'] : 1;
 
         if($activity->save()) {
-            $data = Activity::find($uuid);
-            $activity_info = $data->refresh_period . "." . $data->refresh_chance . "." . $data->start_at . "." . $data->end_at;
+            $activity_info = $activity->refresh_period . "." . $activity->refresh_chance . "." . $activity->start_at . "." . $activity->end_at;
             // 设置活动信息--这个关系到投票时间的判断和投票机会的判断
-            Redis::set('activity_info:'.$data->uniquekey, $activity_info);
-            Redis::EXPIREAT('activity_info:'.$data->uniquekey, strtotime($data->end_at));
+            Redis::set('activity_info:'.$activity->id, $activity_info);
+            Redis::EXPIREAT('activity_info:'.$activity->id, strtotime($activity->end_at));
             // 设置活动参与者信息--初始过期时间为第一个周期结束
-            Redis::hset('vote_record:'.$data->uniquekey, 'init', 'init');
-            $start = strtotime($data->start_at);
-            $exp = $start + $data->refresh_period * 86400;
-            Redis::EXPIREAT('vote_record:'.$data->uniquekey, $exp);
+            Redis::hset('vote_record:'.$activity->id, 'init', 'init');
+            $start = strtotime($activity->start_at);
+            $exp = $start + $activity->refresh_period * 86400;
+            Redis::EXPIREAT('vote_record:'.$activity->id, $exp);
             // 活动候选人key集合--过期时间为活动结束
-            Redis::sadd("candidates:".$data->uniquekey, 'init');
-            Redis::EXPIREAT('candidates:'.$data->uniquekey, strtotime($data->end_at));
+            Redis::sadd("candidates:".$activity->id, 'init');
+            Redis::EXPIREAT('candidates:'.$activity->id, strtotime($activity->end_at));
             // 活动选民key集合--过期时间为活动结束
-            Redis::sadd("voters:".$data->uniquekey, 'init');
-            Redis::EXPIREAT('voters:'.$data->uniquekey, strtotime($data->end_at));
+            Redis::sadd("voters:".$activity->id, 'init');
+            Redis::EXPIREAT('voters:'.$activity->id, strtotime($activity->end_at));
             // 活动票数计数器，按票数排序获取时：升序剪掉第一个，逆序剪掉倒数第一个
-            Redis::zadd("ballots:".$data->uniquekey, -1, 'init');
-            Redis::EXPIREAT('ballots:'.$data->uniquekey, strtotime($data->end_at));
+            Redis::zadd("ballots:".$activity->id, -1, 'init');
+            Redis::EXPIREAT('ballots:'.$activity->id, strtotime($activity->end_at));
             // uv 和 pv
-            Redis::zadd("activity_uv", 0, $data->uniquekey);
-            Redis::zadd("activity_pv", 0, $data->uniquekey);
+            Redis::zadd("activity_uv", 0, $activity->id);
+            Redis::zadd("activity_pv", 0, $activity->id);
             $activityRecord = new ActivityRecord;
-            $activityRecord->activity_key = $data->uniquekey;
+            $activityRecord->activity_id = $activity->id;
             $activityRecord->pv = 0;
             $activityRecord->uv = 0;
             $activityRecord->save();
-            return $this->setResponse($data, 200, 0);
+            return $this->setResponse($activity, 200, 0);
         } else {
             return $this->setResponse(null, 500, -5001);
         }
@@ -137,54 +131,50 @@ class ActivityController extends Controller
         $validatedData = $request->validate([
             'name' => 'max:50',
             'intro' => 'max:512',
-            'host' => 'max:100',
-            'undertake' => 'max:100',
-            'sponsored' => 'max:100',
             'refresh_period' => 'integer|min:1',
             'refresh_chance' => 'integer|min:1',
-            'user_from' => 'integer|in:1,2,3,4',
-            'rules' => 'json',
-            'ava_type' => 'json',
-            'backimg' => 'url',
-            'logo' => 'url',
+            'user_from' => 'in:QQ,Weibo,Wechat,Other',
+            'type' => 'in:img,video,audio,link',
             'start_at' => 'date',
-            'end_at' => 'date|after_or_equal:start_at'
+            'end_at' => 'date|after_or_equal:start_at',
+            'host' => 'max:100',
+            'undertake' => 'max:100',
+            'sponsored' => 'max:100'
         ]);
 
         $activity = Activity::find($request->activity);
 
-        isset($validatedData['name']) ? $activity->name = $validatedData['name'] : 1;
-        isset($validatedData['intro']) ? $activity->intro = $validatedData['intro'] : 1;
-        isset($validatedData['host']) ? $activity->host = $validatedData['host'] : 1;
-        isset($validatedData['undertake']) ? $activity->undertake = $validatedData['undertake'] : 1;
-        isset($validatedData['sponsored']) ? $activity->sponsored = $validatedData['sponsored'] : 1;
-        isset($validatedData['refresh_period']) ? $activity->refresh_period = $validatedData['refresh_period'] : 1;
-        isset($validatedData['refresh_chance']) ? $activity->refresh_chance = $validatedData['refresh_chance'] : 1;
-        isset($validatedData['user_from']) ? $activity->user_from = $validatedData['user_from'] : 1;
-        isset($validatedData['rules']) ? $activity->rules = $validatedData['rules'] : 1;
-        isset($validatedData['ava_type']) ? $activity->ava_type = $validatedData['ava_type'] : 1;
-        isset($validatedData['backimg']) ? $activity->backimg = $validatedData['backimg'] : 1;
-        isset($validatedData['logo']) ? $activity->logo = $validatedData['logo'] : 1;
-        isset($validatedData['start_at']) ? $activity->start_at = $validatedData['start_at'] : 1;
-        isset($validatedData['end_at']) ? $activity->end_at = $validatedData['end_at'] : 1;
+        isset($request['name']) ? $activity->name = $request['name'] : 1;
+        isset($request['intro']) ? $activity->intro = $request['intro'] : 1;
+        isset($request['host']) ? $activity->host = $request['host'] : 1;
+        isset($request['undertake']) ? $activity->undertake = $request['undertake'] : 1;
+        isset($request['sponsored']) ? $activity->sponsored = $request['sponsored'] : 1;
+        isset($request['refresh_period']) ? $activity->refresh_period = $request['refresh_period'] : 1;
+        isset($request['refresh_chance']) ? $activity->refresh_chance = $request['refresh_chance'] : 1;
+        isset($request['user_from']) ? $activity->user_from = $request['user_from'] : 1;
+        isset($request['rules']) ? $activity->rules = $request['rules'] : 1;
+        isset($request['type']) ? $activity->type = $request['type'] : 1;
+        isset($request['backimg']) ? $activity->backimg = $request['backimg'] : 1;
+        isset($request['logo']) ? $activity->logo = $request['logo'] : 1;
+        isset($request['start_at']) ? $activity->start_at = $request['start_at'] : 1;
+        isset($request['end_at']) ? $activity->end_at = $request['end_at'] : 1;
 
         if($activity->save()) {
-            $data = Activity::find($request->activity);
-            $activity_info = $data->refresh_period . "." . $data->refresh_chance . "." . $data->start_at . "." . $data->end_at;
+            $activity_info = $activity->refresh_period . "." . $activity->refresh_chance . "." . $activity->start_at . "." . $activity->end_at;
             // 设置活动信息--过期时间为活动结束时间--这个关系到投票时间的判断和投票机会的判断
-            Redis::set('activity_info:'.$data->uniquekey, $activity_info);
-            Redis::EXPIREAT('activity_info:'.$data->uniquekey, strtotime($data->end_at));
+            Redis::set('activity_info:'.$activity->id, $activity_info);
+            Redis::EXPIREAT('activity_info:'.$activity->id, strtotime($activity->end_at));
             // 设置活动参与者信息--初始过期时间为活动结束
-            $start = strtotime($data->start_at);
-            $exp = $start + $data->refresh_period * 86400;
-            Redis::EXPIREAT('vote_record:'.$data->uniquekey, strtotime($data->end_at));
+            $start = strtotime($activity->start_at);
+            $exp = $start + $activity->refresh_period * 86400;
+            Redis::EXPIREAT('vote_record:'.$activity->id, strtotime($activity->end_at));
             // 活动候选人key集合--过期时间为活动结束
-            Redis::EXPIREAT('candidates:'.$data->uniquekey, strtotime($data->end_at));
+            Redis::EXPIREAT('candidates:'.$activity->id, strtotime($activity->end_at));
             // 活动选民key集合--过期时间为活动结束
-            Redis::EXPIREAT('voters:'.$data->uniquekey, strtotime($data->end_at));
+            Redis::EXPIREAT('voters:'.$activity->id, strtotime($activity->end_at));
             // 活动票数计数器，按票数排序获取时：升序剪掉第一个，逆序剪掉倒数第一个
-            Redis::EXPIREAT('ballots:'.$data->uniquekey, strtotime($data->end_at));
-            return $this->setResponse($data, 200, 0);
+            Redis::EXPIREAT('ballots:'.$activity->id, strtotime($activity->end_at));
+            return $this->setResponse($activity, 200, 0);
         } else {
             return $this->setResponse(null, 500, -5002);
         }

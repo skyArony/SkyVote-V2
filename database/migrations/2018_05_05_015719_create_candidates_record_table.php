@@ -16,9 +16,9 @@ class CreateCandidatesRecordTable extends Migration
     {
         Schema::create('candidates_record', function (Blueprint $table) {
             $table->increments('id');
-            $table->char('candidate_key', 36)->comment('候选人key');
+            $table->unsignedInteger('candidate_id')->comment('候选人id');
             $table->integer('ballot')->unsigned()->default(0)->comment('所得票数');
-            $table->foreign('candidate_key')->references('uniquekey')->on('candidates_info')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('candidate_id')->references('id')->on('candidates')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

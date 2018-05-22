@@ -41,60 +41,30 @@ class CandidateController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|max:20',
             'intro' => 'required|max:512',
-            'belong_ac' => 'required',
-            'type' => 'required|integer|in:1,2,3,4',
-            'media_array' => 'required|array',
-            'media_array.img_url' => 'array',
-            'media_array.video_url' => 'url|max:512',
-            'media_array.audio_url' => 'url|max:512',
-            'media_array.link_url' => 'url|max:512',
-            'media_array.linkcover_url' => 'url|max:512',
+            'belong_ac_id' => 'required',
+            'url' => '',
+            'image' => '',
             'tel' => 'integer',
             'QQ' => 'integer'
         ]);
 
-        $uuid = Str::uuid();
-
         $candidate = new Candidate;
-        $candidate->uniquekey = $uuid;
 
-        $candidate->name = $validatedData['name'];
-        $candidate->intro = $validatedData['intro'];
-        $candidate->belong_ac = $validatedData['belong_ac'];
-        isset($validatedData['tel']) ? $candidate->tel = $validatedData['tel'] : 1;    // 在值不为空时才赋值，这里的 1 无意义
-        isset($validatedData['QQ']) ? $candidate->QQ = $validatedData['QQ'] : 1;
-        $candidate->type = $validatedData['type'];
-
-        switch ($validatedData['type']) {
-            case 1:
-                if (isset($validatedData['media_array']['img_url'])) $candidate->img_url = json_encode($validatedData['media_array']['img_url']);
-                else return $this->setResponse(null, 400, -4001);
-                break;
-            case 2:
-                if (isset($validatedData['media_array']['video_url'])) $candidate->video_url = $validatedData['media_array']['video_url'];
-                else return $this->setResponse(null, 400, -4002);
-                break;
-            case 3:
-                if (isset($validatedData['media_array']['audio_url'])) $candidate->audio_url = $validatedData['media_array']['audio_url'];
-                else return $this->setResponse(null, 400, -4003);
-                break;
-            case 4:
-                if (isset($validatedData['media_array']['link_url']) && isset($validatedData['media_array']['linkcover_url'])) {
-                    $candidate->link_url = $validatedData['media_array']['link_url'];
-                    $candidate->linkcover_url = $validatedData['media_array']['linkcover_url'];
-                }
-                else return $this->setResponse(null, 400, -4004);
-                break;
-        }
+        $candidate->name = $request['name'];
+        $candidate->intro = $request['intro'];
+        $candidate->belong_ac_id = $request['belong_ac_id'];
+        isset($request['tel']) ? $candidate->tel = $request['tel'] : 1;    // 在值不为空时才赋值，这里的 1 无意义
+        isset($request['QQ']) ? $candidate->QQ = $request['QQ'] : 1;
+        isset($request['image']) ? $candidate->imageContent = $request['image'] : 1;
+        isset($request['url']) ? $candidate->textContent = $request['url'] : 1;
 
         if($candidate->save()) {
-            $data = Candidate::find($uuid);
-            Redis::sadd("candidates:".$validatedData['belong_ac'], $data->uniquekey);
+            Redis::sadd("candidates:".$request['belong_ac_id'], $candidate->id);
             $candidateRecord = new CandidateRecord;
-            $candidateRecord->candidate_key = $data->uniquekey;
+            $candidateRecord->candidate_id = $candidate->id;
             $candidateRecord->ballot = 0;
             $candidateRecord->save();
-            return $this->setResponse($data, 200, 0);
+            return $this->setResponse($candidate, 200, 0);
         } else {
             return $this->setResponse(null, 500, -5001);
         }
@@ -128,13 +98,8 @@ class CandidateController extends Controller
         $validatedData = $request->validate([
             'name' => 'max:20',
             'intro' => 'max:512',
-            'type' => 'integer|in:1,2,3,4',
-            'media_array' => 'array',
-            'media_array.img_url' => 'array',
-            'media_array.video_url' => 'url|max:512',
-            'media_array.audio_url' => 'url|max:512',
-            'media_array.link_url' => 'url|max:512',
-            'media_array.linkcover_url' => 'url|max:512',
+            'url' => '',
+            'image' => '',
             'tel' => 'integer',
             'QQ' => 'integer'
         ]);
@@ -143,30 +108,10 @@ class CandidateController extends Controller
 
         isset($validatedData['name']) ? $candidate->name = $validatedData['name'] : 1;
         isset($validatedData['intro']) ? $candidate->intro = $validatedData['intro'] : 1;
-        isset($validatedData['type']) ? $candidate->type = $validatedData['type'] : 1;
         isset($validatedData['tel']) ? $candidate->tel = $validatedData['tel'] : 1;
         isset($validatedData['QQ']) ? $candidate->QQ = $validatedData['QQ'] : 1;
-
-        if(isset($validatedData['type'])){
-            switch ($validatedData['type']) {
-                case 1:
-                    if (isset($validatedData['media_array']['img_url'])) $candidate->img_url = json_encode($validatedData['media_array']['img_url']);
-                    break;
-                case 2:
-
-                    if (isset($validatedData['media_array']['video_url'])) $candidate->video_url = $validatedData['media_array']['video_url'];
-                    break;
-                case 3:
-                    if (isset($validatedData['media_array']['audio_url'])) $candidate->audio_url = $validatedData['media_array']['audio_url'];
-                    break;
-                case 4:
-                    if (isset($validatedData['media_array']['link_url']) && isset($validatedData['media_array']['linkcover_url'])) {
-                        $candidate->link_url = $validatedData['media_array']['link_url'];
-                        $candidate->linkcover_url = $validatedData['media_array']['linkcover_url'];
-                    }
-                    break;
-            }
-        }
+        isset($request['image']) ? $candidate->imageContent = $request['image'] : 1;
+        isset($request['url']) ? $candidate->textContent = $request['url'] : 1;
 
         if($candidate->save()) {
             $data = Candidate::find($request->candidate);
