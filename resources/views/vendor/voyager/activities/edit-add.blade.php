@@ -126,7 +126,7 @@
 @stop
 
 @section('javascript')
-    @include('vendor.voyager.activitys.my-edit-js')
+    @include('vendor.voyager.activities.my-edit-js')
     <script>
         var params = {}
         var $image

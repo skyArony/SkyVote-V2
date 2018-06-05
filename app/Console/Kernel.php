@@ -41,8 +41,8 @@ class Kernel extends ConsoleKernel
                 $activity_record->save();
             }
             // 更新 ballot
-            $activitys = Redis::KEYS('ballots:*');
-            foreach ($activitys as $value) {
+            $activities = Redis::KEYS('ballots:*');
+            foreach ($activities as $value) {
                 $ballot = Redis::zrange($value, 0, -1, 'WITHSCORES');
                 array_shift($ballot);
                 foreach ($ballot as $key => $value2) {

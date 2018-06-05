@@ -66,7 +66,7 @@
                                         </th>
                                     @endcan
                                         {{--我自己加的--}}
-                                        @include('vendor.voyager.activitys.my-browse-thead')
+                                        @include('vendor.voyager.activities.my-browse-thead')
                                         {{--我自己加的--}}
                                     @foreach($dataType->browseRows as $row)
                                         <th>
@@ -98,7 +98,7 @@
                                             </td>
                                         @endcan
                                             {{--我自己加的--}}
-                                            @include('vendor.voyager.activitys.my-browse-status', ['start_at' => $data->start_at, 'end_at' => $data->end_at])
+                                            @include('vendor.voyager.activities.my-browse-status', ['start_at' => $data->start_at, 'end_at' => $data->end_at])
                                             {{--我自己加的--}}
                                         @foreach($dataType->browseRows as $row)
                                             <td>
@@ -191,7 +191,7 @@
                                         @endforeach
                                         <td class="no-sort no-click" id="bread-actions">
                                             {{--我自己加的--}}
-                                            @include('vendor.voyager.activitys.my-browse-action', ['id' => $data->id, 'type' => $data->type, 'name' => $data->name])
+                                            @include('vendor.voyager.activities.my-browse-action', ['id' => $data->id, 'type' => $data->type, 'name' => $data->name])
                                             {{--我自己加的--}}
                                             @foreach(Voyager::actions() as $action)
                                                 @include('voyager::bread.partials.actions', ['action' => $action])

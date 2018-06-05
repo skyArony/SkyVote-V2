@@ -15,7 +15,7 @@ class CreateVoterTable extends Migration
     {
         Schema::create('voter', function (Blueprint $table) {
             $table->increments('id');
-            $table->char('uniquekey', 36)->unique()->comment('参与者key');
+            $table->string('uniquekey')->unique()->comment('参与者key');
             $table->string('name')->comment('参与者昵称');
             $table->string('avatar')->comment('头像');
             $table->enum('plat_from', ['QQ', 'Weibo', 'Wechat', 'Other'])->comment('参与者来源');

@@ -26,8 +26,7 @@ class SocialiteController extends Controller
     }
 
     public function QQ(Request $request) {
-        if(!Redis::EXISTS('voters:'.$request->activity_id)) return $this->setResponse(null, 400, -4005);
-        $request->session()->put('activity_id', $request->activity_id);
+        if(!Redis::EXISTS('activity_info:'.$request->activity_id)) return $this->setResponse(null, 400, -4005);
         $response = $this->socialite->driver('qq')->redirect();
         echo $response;
     }
@@ -45,12 +44,10 @@ class SocialiteController extends Controller
                     $voter->plat_from = 'QQ';
                     $voter->detail = json_encode($user, JSON_UNESCAPED_UNICODE);
                     if(!$voter->save()) return $this->setResponse(null, 500, -4011);
-                    else Redis::sadd("voters:".session('activity_id'), $user['id']);
+                    else Redis::sadd("voters", $user['id']);
                     break;
             }
         }
-
-        $request->session()->pull('activity_id');
 
         return $user;
     }

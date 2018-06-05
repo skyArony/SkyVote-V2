@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateActivitysRecordTable extends Migration
+class CreateActivitiesRecordTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateActivitysRecordTable extends Migration
      */
     public function up()
     {
-        Schema::create('activitys_record', function (Blueprint $table) {
+        Schema::create('activities_record', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('activity_id')->comment('活动id');
             $table->integer('pv')->default(0)->comment('浏览量');
             $table->integer('uv')->default(0)->comment('浏览人数');
-            $table->foreign('activity_id')->references('id')->on('activitys')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('activity_id')->references('id')->on('activities')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 
@@ -29,6 +29,6 @@ class CreateActivitysRecordTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('activitys_record');
+        Schema::dropIfExists('activities_record');
     }
 }

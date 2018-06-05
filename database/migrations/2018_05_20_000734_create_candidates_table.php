@@ -23,7 +23,7 @@ class CreateCandidatesTable extends Migration
             $table->text('textContent')->nullable()->comment('视频、音频、外链类型的容器');
             $table->text('imageContent')->nullable()->comment('外链和和图片类型的容器');
             $table->timestamps();
-            $table->foreign('belong_ac_id')->references('id')->on('activitys')->onDelete('cascade');
+            $table->foreign('belong_ac_id')->references('id')->on('activities')->onDelete('cascade');
         });
     }
 

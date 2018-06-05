@@ -45,13 +45,15 @@ class Controller extends BaseController
             -4003 => '缺失audio_url',
             -4004 => '缺失 link_url 或 linkcover_url',
             -4005 => 'activity_key参数错误',
-            -4005 => 'belong_ac_id 错误，不存在这样的活动',
+            -4006 => 'belong_ac_id 错误，不存在这样的活动',
 
             // 业务相关
             -4010 => '不在可投票时段',
             -4011 => '第三方授权登录失败',
             -4012 => '投票失败',
             -4013 => '投票机会已用完',
+            -4014 => 'voter_key 不合法',
+            -4015 => 'candidate_id 不合法',
 
             // redis
 

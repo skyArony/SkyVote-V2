@@ -16,20 +16,20 @@ class VoteSuccess
 
     public $ip;
     public $voter_key;
-    public $candidate_key;
-    public $activity_key;
+    public $candidate_id;
+    public $activity_id;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($ip, $voter_key, $activity_key, $candidate_key)
+    public function __construct($ip, $voter_key, $activity_id, $candidate_id)
     {
         $this->ip = $ip;
         $this->voter_key = $voter_key;
-        $this->candidate_key = $candidate_key;
-        $this->activity_key = $activity_key;
+        $this->candidate_id = $candidate_id;
+        $this->activity_id = $activity_id;
     }
 
     /**

@@ -8,7 +8,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Models\DB\VoteRecord;
 
-class WriteVoteRecord implements ShouldQueue
+class VoteListener implements ShouldQueue
 {
     /**
      * Create the event listener.
@@ -31,8 +31,8 @@ class WriteVoteRecord implements ShouldQueue
         $voteRecord = new VoteRecord;
         $voteRecord->ip = $event->ip;
         $voteRecord->voter_key = $event->voter_key;
-        $voteRecord->activity_key = $event->activity_key;
-        $voteRecord->candidate_key = $event->candidate_key;
+        $voteRecord->activity_id = $event->activity_id;
+        $voteRecord->candidate_id = $event->candidate_id;
 
         // 地区获取
         $url="http://ip.taobao.com/service/getIpInfo.php?ip=".$voteRecord->ip;

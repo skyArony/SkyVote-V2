@@ -59,11 +59,6 @@ class CandidateController extends Controller
         isset($request['url']) ? $candidate->textContent = $request['url'] : 1;
 
         if($candidate->save()) {
-            Redis::sadd("candidates:".$request['belong_ac_id'], $candidate->id);
-            $candidateRecord = new CandidateRecord;
-            $candidateRecord->candidate_id = $candidate->id;
-            $candidateRecord->ballot = 0;
-            $candidateRecord->save();
             return $this->setResponse($candidate, 200, 0);
         } else {
             return $this->setResponse(null, 500, -5001);
@@ -114,8 +109,7 @@ class CandidateController extends Controller
         isset($request['url']) ? $candidate->textContent = $request['url'] : 1;
 
         if($candidate->save()) {
-            $data = Candidate::find($request->candidate);
-            return $this->setResponse($data, 200, 0);
+            return $this->setResponse($candidate, 200, 0);
         } else {
             return $this->setResponse(null, 500, -5001);
         }

@@ -29,11 +29,11 @@ $api->version('v1', ['namespace' => 'App\Http\Controllers'], function ($api) {
     });
 
     // activity 管理
-    $api->post('activitys', 'ActivityController@store');
-    $api->get('activitys', 'ActivityController@index');
-    $api->get('activitys/{activity}', 'ActivityController@show');
-    $api->match(['put','patch'] ,'activitys/{activity}', 'ActivityController@update');
-    $api->delete('activitys/{activity}', 'ActivityController@destroy');
+    $api->post('activities', 'ActivityController@store');
+    $api->get('activities', 'ActivityController@index');
+    $api->get('activities/{activity}', 'ActivityController@show');
+    $api->match(['put','patch'] ,'activities/{activity}', 'ActivityController@update');
+    $api->delete('activities/{activity}', 'ActivityController@destroy');
 
     // candidate 管理
     $api->post('candidates', 'CandidateController@store');
